@@ -1,0 +1,16 @@
+{
+  "server": {
+    "protocol": "amqp",
+    "hostname": "192.168.4.231",
+    "port": 5672,
+    "username": "microservice",
+    "password": "12micro21",
+    "locale": "en_US",
+    "frameMax": 0,
+    "heartbeat": 2,
+    "vhost": "/"
+  },
+  "exchange": "SolidMain",
+  "channel": {
+  }
+}
