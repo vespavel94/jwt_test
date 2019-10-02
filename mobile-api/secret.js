@@ -1,3 +1,5 @@
 module.exports = {
-  secret: 'solid'
+  secret: 'solid',
+  accessTokenExpireIn: '5m',
+  refreshTokenExpireIn: '10m'
 }

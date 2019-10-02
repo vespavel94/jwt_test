@@ -52,6 +52,40 @@ class HandlerGenerator {
       message: 'Index page'
     })
   }
+
+  user(req, res) {
+    let params = {
+      Login: req.body.login,
+      Password: req.body.password
+    }
+    rabbitmq.sendRequestPromised('VESELOV_AU', 'AuthSolidAD', { '$type': 'MessageDataTypes.LoginPassAuthRequest, MessageDataTypes', ...params }, null, 100000, '')
+    .then(response => {
+      if (response.response.Data) {
+        let token = jwt.sign({
+          username: params.Login
+        },
+        config.secret,
+        {
+          expiresIn: config.accessTokenExpireIn
+        }
+        )
+        res.json({
+          accessToken: {
+            accessToken: token,
+            accessTokenExpireIn: config.accessTokenExpireIn
+          }
+        })
+      }
+      res.status(400).json({
+        result: 'Error',
+        error: 'Неверная комбинация логин/пароль'
+      })
+    })
+    .catch(err => {
+      console.log(err)
+      res.sendStatus(400)
+    })
+  }
 }
 
 function main () {
@@ -59,11 +93,13 @@ function main () {
   let handlers = new HandlerGenerator()
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: true }))
+  app.set('port', process.env.PORT || 3000)
 
   app.post('/login', handlers.login)
   app.get('/', middleware.checkToken, handlers.index)
-  app.listen('3030', () => {
-    console.log('Server started on port 3030')
+  app.post('/user', handlers.user)
+  app.listen(app.get('port'), () => {
+    console.log('Server started on port ' + app.get('port') + ' in mode: ' + process.env.NODE_ENV)
   })
 }
 

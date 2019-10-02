@@ -1,0 +1,19 @@
+{
+  "server": {
+    "protocol": "amqps",
+    "hostname": "dev-int",
+    "port": 5671,
+    "username": "microservice",
+    "password": "Odynjq6mAn5mA13T8PGv",
+    "locale": "en_US",
+    "frameMax": 0,
+    "heartbeat": 2,
+    "vhost": "/"
+  },
+  "exchange": "SolidMain",
+  "channel": {
+  },
+  "ssl": {
+    "ca": "./config/cacert.test.int.pem"
+  }
+}
