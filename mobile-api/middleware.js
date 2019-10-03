@@ -1,13 +1,14 @@
 let jwt = require('jsonwebtoken')
 let config = require('./secret')
+let store = require('./store/store')
 
 let checkToken = (req, res, next) => {
-  let token = req.headers['x-auth-token'] || req.headers['authorization']
-  if (token.startsWith('Bearer ')) {
-    token = token.slice(7, token.length)
+  let accessToken = req.headers['x-auth-token'] || req.headers['authorization']
+  if (accessToken.startsWith('Bearer ')) {
+    accessToken = accessToken.slice(7, accessToken.length)
   }
-  if (token) {
-    jwt.verify(token, config.secret, (err, decoded) => {
+  if (accessToken) {
+    jwt.verify(accessToken, config.secret, (err, decoded) => {
       if (err) {
         return res.json({
           success: false,
@@ -15,7 +16,18 @@ let checkToken = (req, res, next) => {
         })
       } else {
         req.decoded = decoded
-        next()
+        console.log(decoded.username)
+        store.getSession(decoded.username)
+        .then(response => {
+          console.log('success')
+          next()
+        })
+        .catch(err => {
+          res.status(401).json({
+            err: err,
+            success: false
+          })
+        })
       }
     })
   }
