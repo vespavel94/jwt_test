@@ -3,38 +3,33 @@ let config = require('./secret')
 let store = require('./store/store')
 
 let checkToken = (req, res, next) => {
-  let accessToken = req.headers['x-auth-token'] || req.headers['authorization']
-  if (accessToken.startsWith('Bearer ')) {
-    accessToken = accessToken.slice(7, accessToken.length)
-  }
+  let accessToken = req.headers['x-auth-token']
   if (accessToken) {
-    jwt.verify(accessToken, config.secret, (err, decoded) => {
+    jwt.verify(accessToken, config.accessSecret, (err, decoded) => {
       if (err) {
-        return res.json({
-          success: false,
-          message: 'Token is not valid'
+        return res.status(401).json({
+          status: 401,
+          message: 'Токен устарел или неверный'
         })
       } else {
-        req.decoded = decoded
-        console.log(decoded.username)
-        store.getSession(decoded.username)
+        console.log(decoded)
+        store.getSession('username', decoded.username)
         .then(response => {
-          console.log('success')
           next()
         })
         .catch(err => {
           res.status(401).json({
-            err: err,
-            success: false
+            err: 'Сессия не найдена',
+            status: 401
           })
         })
       }
     })
   }
   else {
-    return res.json({
-      success: false,
-      message: 'No token found'
+    return res.status(401).json({
+      message: 'Токен не найден',
+      status: 401
     })
   }
 }

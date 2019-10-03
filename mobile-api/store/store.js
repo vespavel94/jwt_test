@@ -1,4 +1,16 @@
 const Datastore = require('nedb')
+const moment = require('moment')
+const uuid = require('uuid/v4')
+
+function Session (params) {
+  this.id = uuid()
+  this.username = params.username,
+  this.accessToken = params.accessToken,
+  this.accessTokenValidDue = moment().add(300, 'seconds').format('YYYY-MM-DD, HH:mm:ss')
+  this.refreshToken = params.refreshToken,
+  this.refreshTokenValidDue = moment().add(600, 'seconds').format('YYYY-MM-DD, HH:mm:ss')
+  this.created = moment().format('YYYY-MM-DD, HH:mm:ss')
+}
 
 module.exports = {
   sessions: new Datastore({
@@ -8,11 +20,8 @@ module.exports = {
 
   newSession (params) {
     return new Promise((resolve, reject) => {
-      this.sessions.insert({
-        username: params.username,
-        accessToken: params.accessToken,
-        refreshToken: params.refreshToken
-      }, (err, record) => {
+      let session = new Session(params)
+      this.sessions.insert(session, (err, record) => {
         if (err) {
           reject(err)
         } else {
@@ -22,22 +31,27 @@ module.exports = {
     })
   },
 
-  getSession (param) {
+  getSession (key, val) {
     return new Promise((resolve, reject) => {
-      this.sessions.findOne({ "username": param }, (err, record) => {
+      this.sessions.findOne({ [key]: val }, (err, record) => {
         if (err) {
           console.log('Error: ' + err)
           reject(err)
         } else {
           if (record !== null) {
-            console.log("Ok: " + JSON.stringify(record))
             resolve(record)
           } else {
-            console.log('Error')
             reject('Record not found!')
           }
         }
       })
+    })
+  },
+
+  resetStorage () {
+    return new Promise((resolve, reject) => {
+      this.sessions.remove({}, { multi: true })
+      resolve()
     })
   }
 }
