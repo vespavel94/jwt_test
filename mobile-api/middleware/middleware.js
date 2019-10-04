@@ -1,6 +1,6 @@
 let jwt = require('jsonwebtoken')
-let config = require('./secret')
-let store = require('./store/store')
+let config = require('../secret/secret')
+let store = require('../store/store')
 
 let checkToken = (req, res, next) => {
   let accessToken = req.headers['x-auth-token']
@@ -12,12 +12,11 @@ let checkToken = (req, res, next) => {
           message: 'Токен устарел или неверный'
         })
       } else {
-        console.log(decoded)
-        store.getSession('username', decoded.username)
-        .then(response => {
+        store.getSession('id', decoded.id)
+        .then(() => {
           next()
         })
-        .catch(err => {
+        .catch(() => {
           res.status(401).json({
             err: 'Сессия не найдена',
             status: 401
